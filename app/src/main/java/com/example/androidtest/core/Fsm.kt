@@ -1,4 +1,4 @@
-package com.example.androidtest
+package com.example.androidtest.core
 
 class FSM<S : Enum<S>, E : Enum<E>> {
     private val transitions = mutableMapOf<S, MutableMap<E, S>>()

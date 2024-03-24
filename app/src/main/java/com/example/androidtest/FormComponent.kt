@@ -19,14 +19,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.androidtest.FormState.*
 import com.example.androidtest.SectionEvent.*
 import com.example.androidtest.SectionMode.*
-import com.example.androidtest.FormState.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.androidtest.core.FsmViewModel
+import com.example.androidtest.core.fsm
+import com.example.androidtest.core.fsmMode
 
 enum class SectionMode {
     Incomplete,
@@ -67,10 +66,6 @@ val sectionFSM = fsm<SectionMode, SectionEvent>{
     }
 }
 
-fun sectionNextMode(current: SectionMode, event: SectionEvent): SectionMode =
-    sectionFSM.nextState(current, event)
-
-
 @Immutable
 data class SectionState (
     val text: String = "",
@@ -78,34 +73,22 @@ data class SectionState (
     val mode: SectionMode = Incomplete,
 )
 
-class SectionViewModel :ViewModel() {
-    private val _state = MutableStateFlow(SectionState())
-    val state: StateFlow<SectionState> = _state.asStateFlow()
+fun SectionState.withMode(newMode: SectionMode): SectionState = this.copy(mode = newMode)
 
-    private fun setState(update: (SectionState) -> SectionState) {
-        _state.value = update(_state.value)
-    }
-
-    private fun processEvent(event: SectionEvent) {
-        val currentMode = state.value.mode
-
-        val nextMode = sectionNextMode(currentMode, event)
-        if (nextMode == currentMode)
-            return
-
-        setState { x -> x.copy(mode = nextMode) }
-        onChangeMode(currentMode, nextMode, event)
-    }
-
-    private fun onChangeMode(from: SectionMode, to: SectionMode, cause: SectionEvent) {
+class SectionViewModel : FsmViewModel<SectionMode, SectionEvent, SectionState>(
+    fsm = sectionFSM,
+    initialState = SectionState(),
+    mode = fsmMode(SectionState::mode, SectionState::withMode)
+) {
+    override fun onModeChange(from: SectionMode, to: SectionMode, cause: SectionEvent) {
         // interdependencies between state variables could be handled here
         // either by reacting to respective state transition events or to final state
         if (to == Invalid)
-            setState { x -> x.copy(consent = false) }
+            setState { copy(consent = false) }
     }
 
     fun handleTextChange(text: String) {
-        setState { x -> x.copy(text = text) }
+        setState { copy(text = text) }
         processEvent(
             when {
                 text.isEmpty() -> NoInput
@@ -116,7 +99,7 @@ class SectionViewModel :ViewModel() {
     }
 
     fun handleConsentChange(checked: Boolean) {
-        setState { x -> x.copy(consent = checked) }
+        setState { copy(consent = checked) }
         processEvent(if (checked) ConsentGiven else NoConsent)
     }
 }
