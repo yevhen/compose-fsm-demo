@@ -6,15 +6,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
-import com.example.androidtest.SectionEvent.ConsentGiven
-import com.example.androidtest.SectionEvent.InvalidInput
-import com.example.androidtest.SectionEvent.NoConsent
-import com.example.androidtest.SectionEvent.NoInput
-import com.example.androidtest.SectionEvent.ValidInput
-import com.example.androidtest.SectionMode.Complete
-import com.example.androidtest.SectionMode.Incomplete
-import com.example.androidtest.SectionMode.Invalid
-import com.example.androidtest.SectionMode.Valid
+import com.example.androidtest.SectionEvent.*
+import com.example.androidtest.SectionMode.*
 import com.example.androidtest.core.FsmViewModel
 import com.example.androidtest.core.fsm
 import com.example.androidtest.core.fsmMode

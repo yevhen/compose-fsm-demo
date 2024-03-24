@@ -6,12 +6,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,11 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.androidtest.FormState.*
-import com.example.androidtest.SectionEvent.*
-import com.example.androidtest.SectionMode.*
-import com.example.androidtest.core.FsmViewModel
-import com.example.androidtest.core.fsm
-import com.example.androidtest.core.fsmMode
+import com.example.androidtest.SectionMode.Complete
 
 enum class FormState {
     ReadyToSubmit,
