@@ -75,7 +75,7 @@ class SectionViewModel : FsmViewModel<SectionMode, SectionEvent, SectionState>(
     override fun onModeChange(from: SectionMode, to: SectionMode, cause: SectionEvent) {
         // interdependencies between state variables could be handled here
         // either by reacting to respective state transition events or to final state
-        if (to == Invalid)
+        if (to == Invalid || to == Incomplete)
             setState { copy(consent = false) }
     }
 
