@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.androidtest.FormState.*
 import com.example.androidtest.SectionMode.Complete
@@ -32,10 +33,15 @@ fun formNextState(sectionStates: List<SectionState>): FormState {
 }
 
 @Composable
-fun FormComponent() {
-    val userInfoViewModel by remember { mutableStateOf(SectionViewModel()) }
-    val paymentDetailsViewModel by remember { mutableStateOf(SectionViewModel()) }
+fun FormScreen() {
+    val userInfoViewModel by remember { mutableStateOf(SectionViewModel(SectionState(mode = Complete))) }
+    val paymentDetailsViewModel by remember { mutableStateOf(SectionViewModel(SectionState(mode = Complete))) }
 
+    FormComponent(userInfoViewModel, paymentDetailsViewModel)
+}
+
+@Composable
+fun FormComponent(userInfoViewModel: SectionViewModel, paymentDetailsViewModel: SectionViewModel) {
     val userInfoState by userInfoViewModel.state.collectAsStateWithLifecycle()
     val paymentDetailsState by paymentDetailsViewModel.state.collectAsStateWithLifecycle()
 
@@ -77,4 +83,22 @@ fun SubmitButton(formState: FormState) {
     ) {
         Text("Submit Form")
     }
+}
+
+@Composable
+@Preview
+fun ReadyToSubmitFormPreview() {
+    FormComponent(
+        SectionViewModel(SectionState(mode = Complete)),
+        SectionViewModel(SectionState(mode = Complete))
+    )
+}
+
+@Composable
+@Preview
+fun NotReadyFormPreview() {
+    FormComponent(
+        SectionViewModel(SectionState()),
+        SectionViewModel(SectionState())
+    )
 }

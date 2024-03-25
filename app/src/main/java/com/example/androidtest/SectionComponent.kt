@@ -6,6 +6,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.androidtest.SectionEvent.*
 import com.example.androidtest.SectionMode.*
 import com.example.androidtest.core.FsmViewModel
@@ -60,9 +61,9 @@ data class SectionState (
 
 fun SectionState.withMode(newMode: SectionMode): SectionState = this.copy(mode = newMode)
 
-class SectionViewModel : FsmViewModel<SectionMode, SectionEvent, SectionState>(
+class SectionViewModel(initialState: SectionState = SectionState()) : FsmViewModel<SectionMode, SectionEvent, SectionState>(
     fsm = sectionFSM,
-    initialState = SectionState(),
+    initialState = initialState,
     mode = fsmMode(SectionState::mode, SectionState::withMode)
 ) {
     override fun onModeChange(from: SectionMode, to: SectionMode, cause: SectionEvent) {
@@ -136,3 +137,27 @@ fun PaymentDetailsSection(state: SectionState, vm: SectionViewModel) {
         onCheckedChange = vm::handleConsentChange
     )
 }
+
+@Composable
+@Preview
+fun IncompleteUserInfoSectionPreview() =
+    CreateUserInfoSection(SectionState(mode = Incomplete))
+
+@Composable
+@Preview
+fun ValidUserInfoSectionPreview() =
+    CreateUserInfoSection(SectionState(text = "zzzz", mode = Valid))
+
+@Composable
+@Preview
+fun InvalidUserInfoSectionPreview() =
+    CreateUserInfoSection(SectionState(text = "zzzz11233", mode = Invalid))
+
+@Composable
+@Preview
+fun CompleteUserInfoSectionPreview() =
+    CreateUserInfoSection(SectionState(text = "zzzz", consent = true, mode = Complete))
+
+@Composable
+private fun CreateUserInfoSection(state: SectionState) =
+    UserInfoSection(state, SectionViewModel())
