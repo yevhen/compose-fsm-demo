@@ -147,5 +147,5 @@ fun ReadyToSubmitFormPreview() {
 @Composable
 @Preview
 fun NotReadyFormPreview() {
-    FormComponent(FormViewModel(FormState(mode = ReadyToSubmit)))
+    FormComponent(FormViewModel(FormState(mode = NotReady)))
 }
