@@ -10,3 +10,5 @@ The rules are like this:
 - if the user has changed the data after the consent was given, then require consent again
 - the form can be submitted only when all sections are complete
 - the section is considered to be complete only when data is valid, and consent is given
+
+Inspired by Jeb Beich's excellent post: [RESTATE YOUR UI: USING STATE MACHINES TO SIMPLIFY USER INTERFACE DEVELOPMENT](https://cognitect.com/blog/2017/5/22/restate-your-ui-using-state-machines-to-simplify-user-interface-development)
