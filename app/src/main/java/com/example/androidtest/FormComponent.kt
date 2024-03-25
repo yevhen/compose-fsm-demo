@@ -93,26 +93,26 @@ class FormViewModel(
 
 @Composable
 fun FormScreen() {
-    val viewModel by remember { mutableStateOf(FormViewModel()) }
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val formViewModel by remember { mutableStateOf(FormViewModel()) }
 
-    FormComponent(state, viewModel)
+    FormComponent(formViewModel)
 }
 
 @Composable
-fun FormComponent(state: FormState, viewModel: FormViewModel) {
-    val userInfoState by viewModel.userInfoViewModel.state.collectAsStateWithLifecycle()
-    val paymentDetailsState by viewModel.paymentDetailsViewModel.state.collectAsStateWithLifecycle()
+fun FormComponent(formViewModel: FormViewModel) {
+    val userInfoState by formViewModel.userInfoViewModel.state.collectAsStateWithLifecycle()
+    val paymentDetailsState by formViewModel.paymentDetailsViewModel.state.collectAsStateWithLifecycle()
+    val formState by formViewModel.state.collectAsStateWithLifecycle()
 
     Column {
         Box {
             Column {
-                UserInfoSection(userInfoState, viewModel.userInfoViewModel)
-                PaymentDetailsSection(paymentDetailsState, viewModel.paymentDetailsViewModel)
+                UserInfoSection(userInfoState, formViewModel.userInfoViewModel)
+                PaymentDetailsSection(paymentDetailsState, formViewModel.paymentDetailsViewModel)
             }
 
             // overlay that captures all interactions when form is submitting
-            if (state.mode == Submitting) Box(
+            if (formState.mode == Submitting) Box(
                 modifier = Modifier
                     .matchParentSize()
                     .background(Color.LightGray.copy(alpha = 0.5f))
@@ -124,14 +124,14 @@ fun FormComponent(state: FormState, viewModel: FormViewModel) {
             ) { CircularProgressIndicator() }
         }
 
-        SubmitButton(state, viewModel)
+        SubmitButton(formState, formViewModel)
     }
 }
 
 @Composable
 fun SubmitButton(state: FormState, viewModel: FormViewModel) {
     Button(
-        onClick = { viewModel.handleSubmit() },
+        onClick = viewModel::handleSubmit,
         enabled = state.mode == ReadyToSubmit
     ) {
         Text("Submit Form")
@@ -141,11 +141,11 @@ fun SubmitButton(state: FormState, viewModel: FormViewModel) {
 @Composable
 @Preview
 fun ReadyToSubmitFormPreview() {
-    FormComponent(FormState(mode = ReadyToSubmit), FormViewModel())
+    FormComponent(FormViewModel(FormState(mode = ReadyToSubmit)))
 }
 
 @Composable
 @Preview
 fun NotReadyFormPreview() {
-    FormComponent(FormState(mode = NotReady), FormViewModel())
+    FormComponent(FormViewModel(FormState(mode = ReadyToSubmit)))
 }
