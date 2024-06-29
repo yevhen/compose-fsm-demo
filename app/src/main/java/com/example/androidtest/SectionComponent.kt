@@ -88,6 +88,10 @@ class SectionViewModel(initialState: SectionViewModelState = SectionViewModelSta
         setState { copy(consent = checked) }
         processEvent(if (checked) ConsentGiven else NoConsent)
     }
+
+    fun reset() {
+        setState { copy(text = "", consent = false, state = Incomplete) }
+    }
 }
 
 @Composable

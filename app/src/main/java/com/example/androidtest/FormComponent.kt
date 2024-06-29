@@ -27,6 +27,7 @@ import com.example.androidtest.core.FsmViewModel
 import com.example.androidtest.core.fsm
 import com.example.androidtest.core.fsmState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -42,6 +43,7 @@ enum class FormEvent {
     AllSectionsCompleted,
     HasUncompletedSections,
     SubmitInitiated,
+    Submitted
 }
 
 val formFSM = fsm<FormState, FormEvent>{
@@ -52,6 +54,10 @@ val formFSM = fsm<FormState, FormEvent>{
     from(ReadyToSubmit) {
         SubmitInitiated goesTo Submitting
         HasUncompletedSections goesTo NotReady
+    }
+
+    from(Submitting) {
+        Submitted goesTo NotReady
     }
 }
 
@@ -87,8 +93,22 @@ class FormViewModel(
         }
     }
 
+    override fun onChangeState(from: FormState, to: FormState, cause: FormEvent) {
+        // when from is Submitting and to is NotReady,
+        // it means the form has been submitted
+        // and we should reset the form (state of all sections)
+        if (from == Submitting && to == NotReady) {
+            sectionViewModels.value.forEach { it.reset() }
+        }
+    }
+
     fun handleSubmit() {
         processEvent(SubmitInitiated)
+
+        viewModelScope.launch {
+            delay(2000)
+            processEvent(Submitted)
+        }
     }
 }
 
