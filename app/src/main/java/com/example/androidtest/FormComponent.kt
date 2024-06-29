@@ -19,19 +19,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import com.example.androidtest.FormMode.*
+import com.example.androidtest.FormState.*
 import com.example.androidtest.FormEvent.*
-import com.example.androidtest.SectionMode.Complete
+import com.example.androidtest.SectionState.Complete
 import com.example.androidtest.core.FsmViewModel
 import com.example.androidtest.core.fsm
-import com.example.androidtest.core.fsmMode
+import com.example.androidtest.core.fsmState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
-enum class FormMode {
+enum class FormState {
     ReadyToSubmit,
     Submitting,
     NotReady,
@@ -43,7 +43,7 @@ enum class FormEvent {
     SubmitInitiated,
 }
 
-val formFSM = fsm<FormMode, FormEvent>{
+val formFSM = fsm<FormState, FormEvent>{
     from(NotReady) {
         AllSectionsCompleted goesTo ReadyToSubmit
     }
@@ -55,31 +55,31 @@ val formFSM = fsm<FormMode, FormEvent>{
 }
 
 @Immutable
-data class FormState (
+data class FormViewModelState (
     val signature: String = "",
-    val mode: FormMode = NotReady,
+    val state: FormState = NotReady,
 )
 
-fun FormState.withMode(newMode: FormMode) = this.copy(mode = newMode)
+fun FormViewModelState.withState(newState: FormState) = this.copy(state = newState)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FormViewModel(
-    initialState: FormState = FormState(),
+    initialState: FormViewModelState = FormViewModelState(),
     val userInfoViewModel: SectionViewModel = SectionViewModel(),
     val paymentDetailsViewModel: SectionViewModel = SectionViewModel(),
 )
-: FsmViewModel<FormMode, FormEvent, FormState>(
+: FsmViewModel<FormState, FormEvent, FormViewModelState>(
     fsm = formFSM,
     initialState = initialState,
-    mode = fsmMode(FormState::mode, FormState::withMode),
+    state = fsmState(FormViewModelState::state, FormViewModelState::withState),
 ) {
     private val sectionViewModels = MutableStateFlow(listOf(userInfoViewModel, paymentDetailsViewModel))
 
     init {
         viewModelScope.launch {
             sectionViewModels.flatMapLatest { sectionViewModelsList ->
-                combine(sectionViewModelsList.map { it.state }) { sectionStates ->
-                    if (sectionStates.all { it.mode == Complete })
+                combine(sectionViewModelsList.map { it.stateFlow }) { sectionStates ->
+                    if (sectionStates.all { it.state == Complete })
                         AllSectionsCompleted else HasUncompletedSections
                 }
             }.collect { processEvent(it) }
@@ -100,9 +100,9 @@ fun FormScreen() {
 
 @Composable
 fun FormComponent(formViewModel: FormViewModel) {
-    val userInfoState by formViewModel.userInfoViewModel.state.collectAsStateWithLifecycle()
-    val paymentDetailsState by formViewModel.paymentDetailsViewModel.state.collectAsStateWithLifecycle()
-    val formState by formViewModel.state.collectAsStateWithLifecycle()
+    val userInfoState by formViewModel.userInfoViewModel.stateFlow.collectAsStateWithLifecycle()
+    val paymentDetailsState by formViewModel.paymentDetailsViewModel.stateFlow.collectAsStateWithLifecycle()
+    val formState by formViewModel.stateFlow.collectAsStateWithLifecycle()
 
     Column {
         Box {
@@ -112,7 +112,7 @@ fun FormComponent(formViewModel: FormViewModel) {
             }
 
             // overlay that captures all interactions when form is submitting
-            if (formState.mode == Submitting) Box(
+            if (formState.state == Submitting) Box(
                 modifier = Modifier
                     .matchParentSize()
                     .background(Color.LightGray.copy(alpha = 0.5f))
@@ -129,10 +129,10 @@ fun FormComponent(formViewModel: FormViewModel) {
 }
 
 @Composable
-fun SubmitButton(state: FormState, viewModel: FormViewModel) {
+fun SubmitButton(state: FormViewModelState, viewModel: FormViewModel) {
     Button(
         onClick = viewModel::handleSubmit,
-        enabled = state.mode == ReadyToSubmit
+        enabled = state.state == ReadyToSubmit
     ) {
         Text("Submit Form")
     }
@@ -141,11 +141,11 @@ fun SubmitButton(state: FormState, viewModel: FormViewModel) {
 @Composable
 @Preview
 fun ReadyToSubmitFormPreview() {
-    FormComponent(FormViewModel(FormState(mode = ReadyToSubmit)))
+    FormComponent(FormViewModel(FormViewModelState(state = ReadyToSubmit)))
 }
 
 @Composable
 @Preview
 fun NotReadyFormPreview() {
-    FormComponent(FormViewModel(FormState(mode = NotReady)))
+    FormComponent(FormViewModel(FormViewModelState(state = NotReady)))
 }

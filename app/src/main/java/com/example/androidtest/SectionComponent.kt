@@ -8,12 +8,12 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.androidtest.SectionEvent.*
-import com.example.androidtest.SectionMode.*
+import com.example.androidtest.SectionState.*
 import com.example.androidtest.core.FsmViewModel
 import com.example.androidtest.core.fsm
-import com.example.androidtest.core.fsmMode
+import com.example.androidtest.core.fsmState
 
-enum class SectionMode {
+enum class SectionState {
     Incomplete,
     Complete,
     Valid,
@@ -28,7 +28,7 @@ enum class SectionEvent {
     NoConsent
 }
 
-val sectionFSM = fsm<SectionMode, SectionEvent>{
+val sectionFSM = fsm<SectionState, SectionEvent>{
     from(Incomplete) {
         ValidInput goesTo Valid
         InvalidInput goesTo Invalid
@@ -53,20 +53,20 @@ val sectionFSM = fsm<SectionMode, SectionEvent>{
 }
 
 @Immutable
-data class SectionState (
+data class SectionViewModelState (
     val text: String = "",
     val consent: Boolean = false,
-    val mode: SectionMode = Incomplete,
+    val state: SectionState = Incomplete,
 )
 
-fun SectionState.withMode(newMode: SectionMode): SectionState = this.copy(mode = newMode)
+fun SectionViewModelState.withState(newState: SectionState): SectionViewModelState = this.copy(state = newState)
 
-class SectionViewModel(initialState: SectionState = SectionState()) : FsmViewModel<SectionMode, SectionEvent, SectionState>(
+class SectionViewModel(initialState: SectionViewModelState = SectionViewModelState()) : FsmViewModel<SectionState, SectionEvent, SectionViewModelState>(
     fsm = sectionFSM,
     initialState = initialState,
-    mode = fsmMode(SectionState::mode, SectionState::withMode)
+    state = fsmState(SectionViewModelState::state, SectionViewModelState::withState)
 ) {
-    override fun onModeChange(from: SectionMode, to: SectionMode, cause: SectionEvent) {
+    override fun onChangeState(from: SectionState, to: SectionState, cause: SectionEvent) {
         // interdependencies between state variables could be handled here
         // either by reacting to respective state transition events or to final state
         if (to == Invalid || to == Incomplete)
@@ -91,16 +91,16 @@ class SectionViewModel(initialState: SectionState = SectionState()) : FsmViewMod
 }
 
 @Composable
-fun UserInfoSection(state: SectionState, vm: SectionViewModel) {
+fun UserInfoSection(s: SectionViewModelState, vm: SectionViewModel) {
     Text("User Info Section")
 
     TextField(
-        value = state.text,
+        value = s.text,
         onValueChange = vm::handleTextChange,
         label = { Text("User Info") }
     )
 
-    when (state.mode) {
+    when (s.state) {
         Invalid -> Text(text = "Invalid input. Should match [a-z][A-Z]", color = Color.Red)
         Incomplete -> Text(text = "Please, provide personal info", color = Color.Gray)
         Valid -> Text(text = "Please, give consent", color = Color.Blue)
@@ -108,23 +108,23 @@ fun UserInfoSection(state: SectionState, vm: SectionViewModel) {
     }
 
     Checkbox(
-        checked = state.consent,
-        enabled = state.mode == Complete || state.mode == Valid,
+        checked = s.consent,
+        enabled = s.state == Complete || s.state == Valid,
         onCheckedChange = vm::handleConsentChange
     )
 }
 
 @Composable
-fun PaymentDetailsSection(state: SectionState, vm: SectionViewModel) {
+fun PaymentDetailsSection(s: SectionViewModelState, vm: SectionViewModel) {
     Text("Payment Details Section")
 
     TextField(
-        value = state.text,
+        value = s.text,
         onValueChange = vm::handleTextChange,
         label = { Text("Card Details") }
     )
 
-    when (state.mode) {
+    when (s.state) {
         Invalid -> Text(text = "Invalid input. Should match [a-z][A-Z]", color = Color.Red)
         Incomplete -> Text(text = "Please, provide card details", color = Color.Gray)
         Valid -> Text(text = "Please, give consent", color = Color.Blue)
@@ -132,8 +132,8 @@ fun PaymentDetailsSection(state: SectionState, vm: SectionViewModel) {
     }
 
     Checkbox(
-        checked = state.consent,
-        enabled = state.mode == Complete || state.mode == Valid,
+        checked = s.consent,
+        enabled = s.state == Complete || s.state == Valid,
         onCheckedChange = vm::handleConsentChange
     )
 }
@@ -141,23 +141,23 @@ fun PaymentDetailsSection(state: SectionState, vm: SectionViewModel) {
 @Composable
 @Preview
 fun IncompleteUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionState(mode = Incomplete))
+    CreateUserInfoSection(SectionViewModelState(state = Incomplete))
 
 @Composable
 @Preview
 fun ValidUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionState(text = "zzzz", mode = Valid))
+    CreateUserInfoSection(SectionViewModelState(text = "zzzz", state = Valid))
 
 @Composable
 @Preview
 fun InvalidUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionState(text = "zzzz11233", mode = Invalid))
+    CreateUserInfoSection(SectionViewModelState(text = "zzzz11233", state = Invalid))
 
 @Composable
 @Preview
 fun CompleteUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionState(text = "zzzz", consent = true, mode = Complete))
+    CreateUserInfoSection(SectionViewModelState(text = "zzzz", consent = true, state = Complete))
 
 @Composable
-private fun CreateUserInfoSection(state: SectionState) =
+private fun CreateUserInfoSection(state: SectionViewModelState) =
     UserInfoSection(state, SectionViewModel())

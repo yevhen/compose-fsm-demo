@@ -13,7 +13,7 @@ class FSM<S : Enum<S>, E : Enum<E>> {
         StateTransitionBuilder(state).apply(block)
     }
 
-    fun nextState(current: S, event: E): S = transitions[current]?.get(event) ?: current
+    fun nextState(current: S, event: E): S? = transitions[current]?.get(event)
 }
 
 fun <S : Enum<S>, E : Enum<E>> fsm(build: FSM<S, E>.() -> Unit): FSM<S, E> = FSM<S, E>().apply(build)

@@ -8,44 +8,42 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.reflect.KProperty1
 
 @Immutable
-data class FsmMode<S : Enum<S>, State>(
-    val getValue: (State) -> S,
-    val setValue: (State, S) -> State
+data class FsmState<State : Enum<State>, ViewModelState>(
+    val getValue: (ViewModelState) -> State,
+    val setValue: (ViewModelState, State) -> ViewModelState
 )
 
-fun <S : Enum<S>, State> fsmMode(
-    getValue: KProperty1<State, S>,
-    setValue: State.(S) -> State
-): FsmMode<S, State> = FsmMode(
+fun <State : Enum<State>, ViewModelState> fsmState(
+    getValue: KProperty1<ViewModelState, State>,
+    setValue: ViewModelState.(State) -> ViewModelState
+): FsmState<State, ViewModelState> = FsmState(
     getValue = { state -> getValue.get(state) },
     setValue = { state, mode -> state.setValue(mode) }
 )
 
-abstract class FsmViewModel<S : Enum<S>, E : Enum<E>, State>(
-    initialState: State,
-    private val fsm: FSM<S, E>,
-    private val mode: FsmMode<S, State>
+abstract class FsmViewModel<State : Enum<State>, Event : Enum<Event>, ViewModelState>(
+    initialState: ViewModelState,
+    private val fsm: FSM<State, Event>,
+    private val state: FsmState<State, ViewModelState>
 ) : ViewModel() {
-    private val _state = MutableStateFlow(initialState)
-    val state: StateFlow<State> = _state.asStateFlow()
 
-    private fun getMode(state: State): S = this.mode.getValue(state)
-    private fun setMode(state: State, mode: S): State = this.mode.setValue(state, mode)
+    private val _stateFlow: MutableStateFlow<ViewModelState> = MutableStateFlow(initialState)
+    val stateFlow: StateFlow<ViewModelState> = _stateFlow.asStateFlow()
 
-    protected fun setState(update: State.() -> State) {
-        _state.value = _state.value.update()
+    private fun getState(s: ViewModelState): State = this.state.getValue(s)
+    private fun setState(s: ViewModelState, state: State): ViewModelState = this.state.setValue(s, state)
+
+    protected fun setState(update: ViewModelState.() -> ViewModelState) {
+        _stateFlow.value = _stateFlow.value.update()
     }
 
-    protected fun processEvent(event: E) {
-        val currentMode = getMode(_state.value)
+    protected fun processEvent(event: Event) {
+        val currentState = getState(_stateFlow.value)
+        val nextState = fsm.nextState(currentState, event) ?: return
 
-        val nextMode = fsm.nextState(currentMode, event)
-        if (nextMode == currentMode)
-            return
-
-        setState { setMode(this, nextMode) }
-        onModeChange(currentMode, nextMode, event)
+        setState { setState(this, nextState) }
+        onChangeState(currentState, nextState, event)
     }
 
-    protected open fun onModeChange(from: S, to: S, cause: E) = Unit
+    protected open fun onChangeState(from: State, to: State, cause: Event) = Unit
 }
