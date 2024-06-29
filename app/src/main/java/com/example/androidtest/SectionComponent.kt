@@ -61,10 +61,13 @@ data class SectionViewModelState (
 
 fun SectionViewModelState.withState(newState: SectionState): SectionViewModelState = this.copy(state = newState)
 
-class SectionViewModel(initialState: SectionViewModelState = SectionViewModelState()) : FsmViewModel<SectionState, SectionEvent, SectionViewModelState>(
+class SectionViewModel(
+    initialState: SectionViewModelState = SectionViewModelState(),
+    val validInputPattern: String = "^[a-zA-Z]+$"
+) : FsmViewModel<SectionState, SectionEvent, SectionViewModelState>(
     fsm = sectionFSM,
     initialState = initialState,
-    state = fsmState(SectionViewModelState::state, SectionViewModelState::withState)
+    state = fsmState(SectionViewModelState::state, SectionViewModelState::withState),
 ) {
     override fun onChangeState(from: SectionState, to: SectionState, cause: SectionEvent) {
         // interdependencies between state variables could be handled here
@@ -78,7 +81,7 @@ class SectionViewModel(initialState: SectionViewModelState = SectionViewModelSta
         processEvent(
             when {
                 text.isEmpty() -> NoInput
-                text.matches(Regex("^[a-zA-Z]+$")) -> ValidInput
+                text.matches(Regex(validInputPattern)) -> ValidInput
                 else -> InvalidInput
             }
         )
@@ -129,7 +132,7 @@ fun PaymentDetailsSection(s: SectionViewModelState, vm: SectionViewModel) {
     )
 
     when (s.state) {
-        Invalid -> Text(text = "Invalid input. Should match [a-z][A-Z]", color = Color.Red)
+        Invalid -> Text(text = "Invalid input. Should have 16 digits", color = Color.Red)
         Incomplete -> Text(text = "Please, provide card details", color = Color.Gray)
         Valid -> Text(text = "Please, give consent", color = Color.Blue)
         else -> {}
