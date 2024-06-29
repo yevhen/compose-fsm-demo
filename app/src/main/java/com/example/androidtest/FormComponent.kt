@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -112,16 +113,7 @@ fun FormComponent(formViewModel: FormViewModel) {
             }
 
             // overlay that captures all interactions when form is submitting
-            if (formState.state == Submitting) Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(Color.LightGray.copy(alpha = 0.5f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {},
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            SubmittingOverlay(formState)
         }
 
         SubmitButton(formState, formViewModel)
@@ -129,10 +121,24 @@ fun FormComponent(formViewModel: FormViewModel) {
 }
 
 @Composable
-fun SubmitButton(state: FormViewModelState, viewModel: FormViewModel) {
+fun BoxScope.SubmittingOverlay(s: FormViewModelState) {
+    if (s.state == Submitting) Box(
+        modifier = Modifier
+            .matchParentSize()
+            .background(Color.LightGray.copy(alpha = 0.5f))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {},
+        contentAlignment = Alignment.Center
+    ) { CircularProgressIndicator() }
+}
+
+@Composable
+fun SubmitButton(s: FormViewModelState, vm: FormViewModel) {
     Button(
-        onClick = viewModel::handleSubmit,
-        enabled = state.state == ReadyToSubmit
+        onClick = vm::handleSubmit,
+        enabled = s.state == ReadyToSubmit
     ) {
         Text("Submit Form")
     }
