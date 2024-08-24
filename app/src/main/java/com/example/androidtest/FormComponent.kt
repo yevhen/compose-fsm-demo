@@ -72,10 +72,9 @@ fun FormViewModelState.withState(newState: FormState) = this.copy(state = newSta
 @OptIn(ExperimentalCoroutinesApi::class)
 class FormViewModel(
     initialState: FormViewModelState = FormViewModelState(),
-    val userInfoViewModel: SectionViewModel = SectionViewModel(validInputPattern = "^[a-zA-Z]+$"),
-    val paymentDetailsViewModel: SectionViewModel = SectionViewModel(validInputPattern = "^[0-9]+(?:\\d{16})$"),
-)
-: FsmViewModel<FormState, FormEvent, FormViewModelState>(
+    val userInfoViewModel: SectionViewModel = createUserInfoViewModel(),
+    val paymentDetailsViewModel: SectionViewModel = createPaymentDetailsViewModel(),
+) : FsmViewModel<FormState, FormEvent, FormViewModelState>(
     fsm = formFSM,
     initialState = initialState,
     state = fsmState(FormViewModelState::state, FormViewModelState::withState),

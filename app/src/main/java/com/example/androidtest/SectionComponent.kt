@@ -97,6 +97,9 @@ class SectionViewModel(
     }
 }
 
+fun createUserInfoViewModel() = SectionViewModel(validInputPattern = "^[a-zA-Z]+$")
+fun createPaymentDetailsViewModel() = SectionViewModel(validInputPattern = "^[0-9]{16}$")
+
 @Composable
 fun UserInfoSection(s: SectionViewModelState, vm: SectionViewModel) {
     Text("User Info Section")
