@@ -101,53 +101,62 @@ fun createUserInfoViewModel() = SectionViewModel(validInputPattern = "^[a-zA-Z]+
 fun createPaymentDetailsViewModel() = SectionViewModel(validInputPattern = "^[0-9]{16}$")
 
 @Composable
-fun UserInfoSection(s: SectionViewModelState, vm: SectionViewModel) {
-    Text("User Info Section")
+fun BaseSection(
+    title: String,
+    state: SectionViewModelState,
+    viewModel: SectionViewModel,
+    label: String,
+    invalidMessage: String,
+    incompleteMessage: String,
+    validMessage: String
+) {
+    Text(title)
 
     TextField(
-        value = s.text,
-        onValueChange = vm::handleTextChange,
-        label = { Text("User Info") }
+        value = state.text,
+        onValueChange = viewModel::handleTextChange,
+        label = { Text(label) }
     )
 
-    when (s.state) {
-        Invalid -> Text(text = "Invalid input. Should match [a-z][A-Z]", color = Color.Red)
-        Incomplete -> Text(text = "Please, provide personal info", color = Color.Gray)
-        Valid -> Text(text = "Please, give consent", color = Color.Blue)
+    when (state.state) {
+        Invalid -> Text(text = invalidMessage, color = Color.Red)
+        Incomplete -> Text(text = incompleteMessage, color = Color.Gray)
+        Valid -> Text(text = validMessage, color = Color.Blue)
         else -> {}
     }
 
     Checkbox(
-        checked = s.consent,
-        enabled = s.state == Complete || s.state == Valid,
-        onCheckedChange = vm::handleConsentChange
+        checked = state.consent,
+        enabled = state.state == Valid,
+        onCheckedChange = viewModel::handleConsentChange
     )
 }
 
 @Composable
-fun PaymentDetailsSection(s: SectionViewModelState, vm: SectionViewModel) {
-    Text("Payment Details Section")
-
-    TextField(
-        value = s.text,
-        onValueChange = vm::handleTextChange,
-        label = { Text("Card Details") }
-    )
-
-    when (s.state) {
-        Invalid -> Text(text = "Invalid input. Should have 16 digits", color = Color.Red)
-        Incomplete -> Text(text = "Please, provide card details", color = Color.Gray)
-        Valid -> Text(text = "Please, give consent", color = Color.Blue)
-        else -> {}
-    }
-
-    Checkbox(
-        checked = s.consent,
-        enabled = s.state == Complete || s.state == Valid,
-        onCheckedChange = vm::handleConsentChange
+fun UserInfoSection(state: SectionViewModelState, viewModel: SectionViewModel) {
+    BaseSection(
+        title = "User Info Section",
+        state = state,
+        viewModel = viewModel,
+        label = "User Info",
+        invalidMessage = "Invalid input. Should match [a-z][A-Z]",
+        incompleteMessage = "Please, provide personal info",
+        validMessage = "Please, give consent"
     )
 }
 
+@Composable
+fun PaymentDetailsSection(state: SectionViewModelState, viewModel: SectionViewModel) {
+    BaseSection(
+        title = "Payment Details Section",
+        state = state,
+        viewModel = viewModel,
+        label = "Card Details",
+        invalidMessage = "Invalid input. Should have 16 digits",
+        incompleteMessage = "Please, provide card details",
+        validMessage = "Please, give consent"
+    )
+}
 @Composable
 @Preview
 fun IncompleteUserInfoSectionPreview() =
