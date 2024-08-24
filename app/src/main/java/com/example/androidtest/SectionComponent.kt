@@ -160,23 +160,23 @@ fun PaymentDetailsSection(state: SectionViewModelState, viewModel: SectionViewMo
 @Composable
 @Preview
 fun IncompleteUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionViewModelState(state = Incomplete))
+    CreateUserInfoSectionPreview(SectionViewModelState(state = Incomplete))
 
 @Composable
 @Preview
 fun ValidUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionViewModelState(text = "zzzz", state = Valid))
+    CreateUserInfoSectionPreview(SectionViewModelState(text = "zzzz", state = Valid))
 
 @Composable
 @Preview
 fun InvalidUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionViewModelState(text = "zzzz11233", state = Invalid))
+    CreateUserInfoSectionPreview(SectionViewModelState(text = "zzzz11233", state = Invalid))
 
 @Composable
 @Preview
 fun CompleteUserInfoSectionPreview() =
-    CreateUserInfoSection(SectionViewModelState(text = "zzzz", consent = true, state = Complete))
+    CreateUserInfoSectionPreview(SectionViewModelState(text = "zzzz", consent = true, state = Complete))
 
 @Composable
-private fun CreateUserInfoSection(state: SectionViewModelState) =
+private fun CreateUserInfoSectionPreview(state: SectionViewModelState) =
     UserInfoSection(state, SectionViewModel())
